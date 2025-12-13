@@ -15,49 +15,74 @@ import "./config/passport.js";
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-
-// SECURITY
+/* =======================
+   SECURITY MIDDLEWARE
+======================= */
 app.use(helmet());
 
-// CORS MUST BE EXACT OR GOOGLE LOGIN FAILS
+/* =======================
+   CORS (LOCAL + CLOUD RUN)
+======================= */
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173", // local dev
+      "https://capstone-frontend-805715922298.us-central1.run.app", // production
+    ],
     credentials: true,
   })
 );
 
+/* =======================
+   CORE MIDDLEWARE
+======================= */
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-// SESSION MUST BE LIKE THIS OR LOGIN FAILS
+/* =======================
+   SESSION CONFIG (CLOUD RUN SAFE)
+======================= */
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "supersecret-haniya",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // local HTTP
+      secure: true,        // REQUIRED for HTTPS (Cloud Run)
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",    // REQUIRED for cross-site auth
     },
   })
 );
 
-// PASSPORT
+/* =======================
+   PASSPORT
+======================= */
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ROUTES
+/* =======================
+   ROUTES
+======================= */
 app.use("/auth", authRoutes);
 app.use("/api/transactions", transactionRoutes);
 
-app.get("/health", (req, res) => res.json({ status: "ok" }));
-
-// START SERVER
-connectDB().then(() => {
-  app.listen(PORT, "0.0.0.0", () =>
-    console.log(`🚀 Backend running on http://localhost:${PORT}`)
-  );
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
 });
+
+/* =======================
+   START SERVER (AFTER DB)
+======================= */
+connectDB()
+  .then(() => {
+    console.log("✅ MongoDB connected");
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`🚀 Server listening on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err);
+  });
