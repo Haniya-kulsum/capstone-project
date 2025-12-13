@@ -11,6 +11,7 @@ import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import transactionRoutes from "./routes/transactions.js";
 import "./config/passport.js";
+app.set("trust proxy", 1);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -75,14 +76,10 @@ app.get("/health", (req, res) => {
 /* =======================
    START SERVER (AFTER DB)
 ======================= */
-connectDB()
-  .then(() => {
-    console.log("✅ MongoDB connected");
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server listening on port ${PORT}`);
+});
 
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`🚀 Server listening on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection failed:", err);
-  });
+connectDB()
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection failed:", err));
