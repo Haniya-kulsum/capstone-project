@@ -1,0 +1,14 @@
+POST http://localhost:3000/api/transactions
+Content-Type: application/json
+
+{
+  "userId": "64f112233445566778899abc",
+  "type": "expense",
+  "amount": 25,
+  "category": "food",
+  "date": "2025-01-01",
+  "description": "pizza"
+}
+
+
+GET http://localhost:3000/api/transactions/64f112233445566778899abc

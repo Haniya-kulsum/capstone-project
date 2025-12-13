@@ -1,0 +1,353 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* your custom CSS goes UNDER this line */
+
+
+
+/* ----- Global reset & base styles ----- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #020617; /* dark navy */
+  color: #e5e7eb;      /* slate-200 */
+}
+
+/* Utility */
+.center-message {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* ----- LOGIN PAGE ----- */
+
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: radial-gradient(circle at top left, #1d4ed8, #020617 50%, #0f172a);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #020617;
+  border-radius: 1.25rem;
+  padding: 2.25rem 2.5rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.login-card h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.login-card p {
+  margin: 0 0 1.75rem;
+  color: #cbd5f5;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.6rem;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.98rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.7);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.9);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.9);
+}
+
+.google-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: white;
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+/* ----- APP SHELL / HEADER ----- */
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: radial-gradient(circle at top left, #1d4ed8, #020617 60%);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.app-header-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.app-title-main {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.app-title-sub {
+  font-size: 0.9rem;
+  color: #cbd5f5;
+}
+
+.app-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+}
+
+.btn-ghost {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(148, 163, 184, 0.18);
+  border-color: #e5e7eb;
+}
+
+/* ----- MAIN LAYOUT ----- */
+
+.app-main {
+  max-width: 1120px;
+  margin: 1.5rem auto 2.5rem;
+  padding: 0 1.5rem 2.5rem;
+}
+
+/* Cards & animation */
+
+.card {
+  background: #020617;
+  border-radius: 1.1rem;
+  padding: 1.25rem 1.4rem;
+  border: 1px solid rgba(30, 64, 175, 0.6);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.9);
+}
+
+.card-animate {
+  animation: fadeInUp 0.45s ease-out;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.card-subtitle {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Summary top row */
+
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+}
+
+/* Grid for chart + list + API card */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 2fr;
+  grid-auto-rows: minmax(0, auto);
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Transaction list */
+
+.tx-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+
+.tx-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+}
+
+.tx-item:last-child {
+  border-bottom: none;
+}
+
+.tx-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.tx-category {
+  font-weight: 500;
+}
+
+.tx-desc {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* Add transaction form */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.form-grid-full {
+  grid-column: 1 / -1;
+}
+
+label {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  background: #020617;
+  color: #e5e7eb;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  border-radius: 0.8rem;
+  border: none;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.3rem;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.6);
+}
+
+.btn-small:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(22, 163, 74, 0.8);
+}
+
+.btn-small:active {
+  transform: translateY(0);
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.9);
+}
+
+/* Tiny helper text */
+.helper-text {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
