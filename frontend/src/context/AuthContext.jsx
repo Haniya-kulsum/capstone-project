@@ -9,9 +9,10 @@ export function AuthProvider({ children }) {
 
   async function fetchUser() {
     try {
-      const res = await axios.get("http://localhost:8080/auth/me", {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        "https://capstone-backend-805715922298.us-central1.run.app/auth/me",
+        { withCredentials: true }
+      );
       setUser(res.data.user || null);
     } catch (err) {
       setUser(null);
@@ -24,10 +25,12 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
+  // ✅ FIXED LOGOUT (NO localhost)
   const logout = async () => {
-    await axios.get("http://localhost:8080/auth/logout", {
-      withCredentials: true,
-    });
+    await axios.get(
+      "https://capstone-backend-805715922298.us-central1.run.app/auth/logout",
+      { withCredentials: true }
+    );
     setUser(null);
   };
 
