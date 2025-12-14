@@ -50,6 +50,15 @@ export default function Dashboard() {
   } = useSWR(`/api/transactions/${user.id}`, fetcher);
 
   const txList = transactions ?? [];
+ 
+  const {
+  data: rateData,
+  isLoading: rateLoading,
+  error: rateError,
+    } = useSWR(
+    "https://api.exchangerate.host/latest?base=USD&symbols=EUR",
+    (url) => fetch(url).then((r) => r.json())
+  );
 
   const filteredTx =
     filterState.category === "all"
