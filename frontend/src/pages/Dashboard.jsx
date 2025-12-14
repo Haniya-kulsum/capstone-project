@@ -20,9 +20,10 @@ function filterReducer(state, action) {
 export default function Dashboard() {
   const { user, logout, loading } = useAuth();
 
-  // 🔑 IMPORTANT: prevent crash
-  if (loading) return null;
+  // ✅ PREVENT BLANK SCREEN
+  if (loading) return <div className="center-message">Loading…</div>;
   if (!user) return null;
+
 
   const [filterState, dispatchFilter] = useReducer(filterReducer, {
     category: "all",

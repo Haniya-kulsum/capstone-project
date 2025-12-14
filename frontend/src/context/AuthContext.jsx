@@ -7,24 +7,25 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchUser = async () => {
+    try {
+      const res = await api.get("/auth/me");
+      // 🔑 BACKEND RETURNS USER DIRECTLY
+      setUser(res.data || null);
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    api
-      .get("/auth/me")
-      .then((res) => {
-        setUser(res.data || null);
-      })
-      .catch(() => {
-        setUser(null);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    fetchUser();
   }, []);
 
   const logout = async () => {
     await api.get("/auth/logout");
     setUser(null);
-    window.location.href = "/";
   };
 
   return (

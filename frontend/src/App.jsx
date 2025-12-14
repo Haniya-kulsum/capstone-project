@@ -2,16 +2,49 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import Home from "./pages/Home.jsx";
+
+/* ---------------- LOGIN PAGE ---------------- */
+
+function LoginPage() {
+  return (
+    <div className="login-screen">
+      <div className="login-card card-animate">
+        <h1>Capstone Finance</h1>
+        <p>
+          Sign in with your Google account to view and manage your personal
+          expense dashboard.
+        </p>
+
+        {/* ✅ MUST BE REDIRECT */}
+        <a
+          href="https://capstone-backend-c557.onrender.com/auth/google"
+          className="btn-primary"
+        >
+          <span className="google-icon">G</span>
+          Sign in with Google
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* -------------- PROTECTED ROUTE -------------- */
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
-  if (!user) return <Home />;
+  if (loading) {
+    return <div className="center-message">Loading…</div>;
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
 
   return children;
 }
+
+/* ------------------- APP -------------------- */
 
 export default function App() {
   return (
