@@ -24,7 +24,7 @@ function filterReducer(state, action) {
 }
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
 
   // 🔑 REQUIRED: redirect to backend OAuth if not logged in
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function Dashboard() {
       window.location.href =
         "https://capstone-backend-c557.onrender.com/auth/google";
     }
-  }, [user]);
+  }, [user, loading]);
 
   // 🔑 REQUIRED: don’t render UI while redirecting
   if (!user) return null;
