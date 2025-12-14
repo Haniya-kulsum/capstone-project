@@ -23,6 +23,11 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
+  // ✅ LOGIN — THIS WAS MISSING
+  const login = () => {
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+  };
+
   // Logout user
   const logout = async () => {
     try {
@@ -34,7 +39,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
