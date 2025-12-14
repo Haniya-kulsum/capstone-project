@@ -3,17 +3,15 @@ import passport from "passport";
 
 const router = express.Router();
 
-/**
- * GOOGLE LOGIN
- */
+// Start Google OAuth
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
 );
 
-/**
- * GOOGLE CALLBACK
- */
+// Google OAuth callback
 router.get(
   "/google/callback",
   passport.authenticate("google", {
@@ -21,29 +19,22 @@ router.get(
     session: true,
   }),
   (req, res) => {
-    // ✅ SUCCESS → redirect to frontend dashboard
-res.redirect("https://5173-49618724-acde-4874-98c1-2b48b7c4a3b7.cs-us-east1-yeah.cloudshell.dev");
-  );
-
+    res.redirect(process.env.FRONTEND_URL);
   }
 );
 
-/**
- * RETURN AUTHENTICATED USER
- */
+// Get current user
 router.get("/me", (req, res) => {
-  res.json({ user: req.user || null });
+  if (!req.user) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  res.json(req.user);
 });
 
-/**
- * LOGOUT
- */
+// Logout
 router.get("/logout", (req, res) => {
   req.logout(() => {
-    req.session.destroy(() => {
-      res.clearCookie("connect.sid");
-      res.json({ message: "Logged out" });
-    });
+    res.json({ message: "Logged out" });
   });
 });
 
