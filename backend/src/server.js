@@ -26,12 +26,15 @@ app.use(express.json());
 /* SESSION */
 app.use(
   session({
+    name: "capstone.sid",
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
-      secure: true,
-      sameSite: "none",
+      httpOnly: true,
+      secure: true,        // REQUIRED on Render (HTTPS)
+      sameSite: "none",    // REQUIRED for cross-domain
     },
   })
 );
