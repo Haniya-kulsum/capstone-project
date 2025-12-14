@@ -13,14 +13,16 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "https://capstone-frontend-yqjn.onrender.com",
-    session: true,
+    failureRedirect: "/login",
   }),
   (req, res) => {
-    // ✅ ALWAYS redirect back to frontend
-    res.redirect("https://capstone-frontend-yqjn.onrender.com");
+    // 🔑 THIS LINE IS CRITICAL
+    req.login(req.user, () => {
+      res.redirect("https://capstone-frontend-yqjn.onrender.com");
+    });
   }
 );
+
 
 // 👤 Get logged-in user (FIXED RESPONSE SHAPE)
 router.get("/me", (req, res) => {
