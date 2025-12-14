@@ -17,11 +17,14 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:5173",
+    failureRedirect: "/login",
+    session: true,
   }),
   (req, res) => {
-    // Redirect to frontend after successful login
-    res.redirect("http://localhost:5173");
+    // ✅ SUCCESS → redirect to frontend dashboard
+res.redirect("https://5173-49618724-acde-4874-98c1-2b48b7c4a3b7.cs-us-east1-yeah.cloudshell.dev");
+  );
+
   }
 );
 

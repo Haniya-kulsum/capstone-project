@@ -11,75 +11,77 @@ import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import transactionRoutes from "./routes/transactions.js";
 import "./config/passport.js";
-app.set("trust proxy", 1);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 /* =======================
-   SECURITY MIDDLEWARE
+   TRUST PROXY (Cloud Run)
+======================= */
+app.set("trust proxy", 1);
+
+/* =======================
+   SECURITY
 ======================= */
 app.use(helmet());
 
 /* =======================
-   CORS (LOCAL + CLOUD RUN)
+   PARSERS
+======================= */
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+/* =======================
+   LOGGING
+======================= */
+app.use(morgan("dev"));
+
+/* =======================
+   CORS
 ======================= */
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // local dev
-      "https://capstone-frontend-805715922298.us-central1.run.app", // production
-    ],
+    origin: true,
     credentials: true,
   })
 );
 
 /* =======================
-   CORE MIDDLEWARE
-======================= */
-app.use(express.json());
-app.use(cookieParser());
-app.use(morgan("dev"));
-
-/* =======================
-   SESSION CONFIG (CLOUD RUN SAFE)
+   SESSION
 ======================= */
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "supersecret-haniya",
+    secret: process.env.SESSION_SECRET || "capstone-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true,        // REQUIRED for HTTPS (Cloud Run)
-      httpOnly: true,
-      sameSite: "none",    // REQUIRED for cross-site auth
+      secure: false,
+      sameSite: "lax",
     },
   })
 );
 
-/* =======================
-   PASSPORT
-======================= */
 app.use(passport.initialize());
-app.use(passport.session());
 
 /* =======================
    ROUTES
 ======================= */
 app.use("/auth", authRoutes);
-app.use("/api/transactions", transactionRoutes);
+app.use("/transactions", transactionRoutes);
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
+/* =======================
+   SERVER START
+======================= */
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 
 /* =======================
-   START SERVER (AFTER DB)
+   DB CONNECT (BACKGROUND)
 ======================= */
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server listening on port ${PORT}`);
-});
-
 connectDB()
   .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection failed:", err));
+  .catch((err) =>
+    console.error("❌ MongoDB connection failed:", err)
+  );

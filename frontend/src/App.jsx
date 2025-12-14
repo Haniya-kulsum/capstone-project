@@ -5,8 +5,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 
 function LoginPage() {
   const handleLogin = () => {
-    window.location.href = "http://localhost:8080/auth/google";
-  };
+	window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+	 };
 
   return (
     <div className="login-screen">

@@ -1,37 +1,36 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
+import { createContext, useContext, useEffect, useState } from "react";
+import api from "../api";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  async function fetchUser() {
+  // Fetch logged-in user on app load
+  const fetchUser = async () => {
     try {
-      const res = await axios.get(
-        "https://capstone-backend-805715922298.us-central1.run.app/auth/me",
-        { withCredentials: true }
-      );
-      setUser(res.data.user || null);
+      const res = await api.get("/auth/me");
+      setUser(res.data);
     } catch (err) {
       setUser(null);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     fetchUser();
   }, []);
 
-  // ✅ FIXED LOGOUT (NO localhost)
+  // Logout user
   const logout = async () => {
-    await axios.get(
-      "https://capstone-backend-805715922298.us-central1.run.app/auth/logout",
-      { withCredentials: true }
-    );
-    setUser(null);
+    try {
+      await api.get("/auth/logout");
+      setUser(null);
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
   };
 
   return (

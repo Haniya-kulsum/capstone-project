@@ -16,5 +16,5 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Start the server
-CMD ["npm", "start"]
+CMD ["node", "src/server.js"]
 
