@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 
+/* ---------------- LOGIN PAGE ---------------- */
+
 function LoginPage() {
   const { login } = useAuth();
 
@@ -22,7 +24,8 @@ function LoginPage() {
     </div>
   );
 }
-}
+
+/* -------------- PROTECTED ROUTE -------------- */
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -37,6 +40,8 @@ function ProtectedRoute({ children }) {
 
   return children;
 }
+
+/* ------------------- APP -------------------- */
 
 export default function App() {
   return (
