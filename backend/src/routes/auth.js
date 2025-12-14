@@ -11,17 +11,19 @@ router.get(
   })
 );
 
+
 // Google OAuth callback
 router.get(
   "/google/callback",
   passport.authenticate("google", {
     failureRedirect: "/login",
     session: true,
-  }),
-  (req, res) => {
-    res.redirect(process.env.FRONTEND_URL);
-  }
+  })
 );
+
+router.get("/google/success", (req, res) => {
+  res.redirect(process.env.FRONTEND_URL);
+});
 
 // Get current user
 router.get("/me", (req, res) => {
