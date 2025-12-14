@@ -24,11 +24,21 @@ router.get(
 
 // 👤 Get logged-in user (FIXED RESPONSE SHAPE)
 router.get("/me", (req, res) => {
+  // 🚫 disable cache completely
+  res.setHeader("Cache-Control", "no-store");
+
   if (!req.user) {
     return res.status(401).json({ user: null });
   }
 
-  res.json({ user: req.user }); // ✅ THIS WAS THE BUG
+  res.json({
+    user: {
+      _id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      avatarUrl: req.user.avatarUrl,
+    },
+  });
 });
 
 // 🚪 Logout
