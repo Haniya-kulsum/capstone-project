@@ -3,27 +3,32 @@ import passport from "passport";
 
 const router = express.Router();
 
-// Start Google OAuth
+/* TEST ROUTE — DO NOT REMOVE */
+router.get("/test", (req, res) => {
+  res.send("AUTH ROUTER WORKS");
+});
+
+/* Start Google OAuth */
 router.get(
   "/google",
   passport.authenticate("google", {
-    scope: ["profile", "email"]
+    scope: ["profile", "email"],
   })
 );
 
-// Google OAuth callback
+/* Google OAuth callback */
 router.get(
   "/google/callback",
   passport.authenticate("google", {
     failureRedirect: "/login",
-    session: true
+    session: true,
   }),
   (req, res) => {
     res.redirect(process.env.FRONTEND_URL);
   }
 );
 
-// Get current user
+/* Get current user */
 router.get("/me", (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: "Not authenticated" });
@@ -31,7 +36,7 @@ router.get("/me", (req, res) => {
   res.json(req.user);
 });
 
-// Logout
+/* Logout */
 router.get("/logout", (req, res, next) => {
   req.logout(function (err) {
     if (err) return next(err);
