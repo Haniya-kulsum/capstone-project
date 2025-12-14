@@ -11,6 +11,7 @@ import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import transactionRoutes from "./routes/transactions.js";
 import "./config/passport.js";
+app.set("trust proxy", 1);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -52,17 +53,19 @@ app.use(
 ======================= */
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "capstone-secret",
+    name: "session",
+    secret: process.env.SESSION_SECRET || "dev_secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
     },
   })
 );
 
 app.use(passport.initialize());
+app.use(passport.session());
 
 /* =======================
    ROUTES
