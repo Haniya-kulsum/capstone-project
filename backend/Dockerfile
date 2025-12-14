@@ -11,10 +11,10 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Cloud Run requires port 8080
-ENV PORT=8080
-EXPOSE 8080
+
+# Do NOT hardcode PORT on Render
+EXPOSE 10000
 
 # Start the server
-CMD ["node", "src/server.js"]
+CMD ["node", "src/server.js"
 
