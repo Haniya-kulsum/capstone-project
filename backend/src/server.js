@@ -7,6 +7,10 @@ import "./config/passport.js";
 
 const app = express();
 
+/* 🔑 REQUIRED FOR RENDER */
+app.set("trust proxy", 1);
+
+/* 🔑 CORS */
 app.use(
   cors({
     origin: "https://capstone-frontend-yqjn.onrender.com",
@@ -14,15 +18,20 @@ app.use(
   })
 );
 
+/* 🔑 SESSION (THIS IS THE FIX) */
 app.use(
   session({
     name: "capstone.sid",
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
-      secure: true,        // Render = HTTPS
-      sameSite: "none",    },
+      httpOnly: true,
+      secure: true,        // HTTPS only
+      sameSite: "none",    // REQUIRED for cross-domain
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
   })
 );
 
