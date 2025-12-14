@@ -1,20 +1,18 @@
 import express from "express";
 import cors from "cors";
 import session from "express-session";
-import passport from "./config/passport.js";
+import passport from "passport";
+
+import "./config/passport.js";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 
 const app = express();
 
-/* =======================
-   TRUST PROXY (RENDER)
-======================= */
+/* TRUST PROXY (RENDER) */
 app.set("trust proxy", 1);
 
-/* =======================
-   CORS
-======================= */
+/* CORS */
 app.use(
   cors({
     origin: "https://capstone-frontend-yqjn.onrender.com",
@@ -22,11 +20,10 @@ app.use(
   })
 );
 
-/* =======================
-   MIDDLEWARE
-======================= */
+/* BODY PARSER */
 app.use(express.json());
 
+/* SESSION */
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -39,26 +36,26 @@ app.use(
   })
 );
 
+/* PASSPORT */
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* =======================
-   ROUTES
-======================= */
+/* ROUTES */
 app.use("/auth", authRoutes);
 
-/* =======================
-   START SERVER
-======================= */
-const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+/* TEST */
+app.get("/", (req, res) => {
+  res.send("Backend running");
 });
 
-/* =======================
-   DB CONNECT
-======================= */
+/* START SERVER */
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
+});
+
+/* DB */
 connectDB()
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB error", err));
+  .then(() => console.log("MongoDB connected"))
+  .catch(console.error);
+
