@@ -5,7 +5,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 
 function LoginPage() {
   const handleLogin = () => {
-	window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+	window.location.href = `https://capstone-project-ronh.onrender.com/auth/google`;
 	 };
 
   return (
