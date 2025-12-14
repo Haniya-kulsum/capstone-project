@@ -2,10 +2,7 @@ import express from "express";
 import session from "express-session";
 import passport from "passport";
 import cors from "cors";
-
 import authRoutes from "./routes/auth.js";
-
-// 🔥 THIS LINE IS WHAT YOU WERE MISSING
 import "./config/passport.js";
 
 const app = express();
