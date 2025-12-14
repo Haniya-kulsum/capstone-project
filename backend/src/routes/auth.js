@@ -3,27 +3,19 @@ import passport from "passport";
 
 const router = express.Router();
 
-// Start Google OAuth
 router.get(
   "/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-  })
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-// Google OAuth callback
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "/",
-    session: true,
-  }),
-  (req, res) => {
-    res.redirect(`${process.env.FRONTEND_URL}/`);
-  }
+    failureRedirect: "/login",
+    successRedirect: "https://capstone-frontend-yqjn.onrender.com",
+  })
 );
 
-// Get current user
 router.get("/me", (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: "Not authenticated" });
@@ -31,11 +23,12 @@ router.get("/me", (req, res) => {
   res.json(req.user);
 });
 
-// Logout
-router.get("/logout", (req, res, next) => {
-  req.logout(function (err) {
-    if (err) return next(err);
-    res.json({ message: "Logged out" });
+router.get("/logout", (req, res) => {
+  req.logout(() => {
+    req.session.destroy(() => {
+      res.clearCookie("capstone.sid");
+      res.json({ message: "Logged out" });
+    });
   });
 });
 

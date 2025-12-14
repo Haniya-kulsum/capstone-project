@@ -1,8 +1,9 @@
 import express from "express";
 import session from "express-session";
-import passport from "passport";
 import cors from "cors";
 import dotenv from "dotenv";
+
+import passport from "./config/passport.js"; // 🔥 REQUIRED
 import authRoutes from "./routes/auth.js";
 
 dotenv.config();
@@ -10,7 +11,7 @@ dotenv.config();
 const app = express();
 
 /* =======================
-   CORS (VERY IMPORTANT)
+   CORS
 ======================= */
 app.use(
   cors({
@@ -20,7 +21,7 @@ app.use(
 );
 
 /* =======================
-   SESSION CONFIG
+   SESSION
 ======================= */
 app.use(
   session({
@@ -30,8 +31,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,        // 🔥 REQUIRED for HTTPS (Render)
-      sameSite: "none",    // 🔥 REQUIRED for cross-domain
+      secure: true,
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24,
     },
   })
@@ -49,20 +50,12 @@ app.use(passport.session());
 app.use("/auth", authRoutes);
 
 /* =======================
-   TEST ROUTES
+   TEST
 ======================= */
-app.get("/", (req, res) => {
-  res.send("Backend running");
-});
+app.get("/", (req, res) => res.send("Backend running"));
 
-app.get("/ping", (req, res) => {
-  res.send("pong");
-});
-
-/* =======================
-   START SERVER
-======================= */
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+
