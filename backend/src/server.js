@@ -2,15 +2,16 @@ import express from "express";
 import session from "express-session";
 import passport from "passport";
 import cors from "cors";
-import "./config/passport.js";
+import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
+
+dotenv.config();
 
 const app = express();
 
-/* 🔥 REQUIRED FOR RENDER */
-app.set("trust proxy", 1);
-
-/* CORS */
+/* =======================
+   CORS (VERY IMPORTANT)
+======================= */
 app.use(
   cors({
     origin: "https://capstone-frontend-yqjn.onrender.com",
@@ -18,7 +19,9 @@ app.use(
   })
 );
 
-/* SESSION */
+/* =======================
+   SESSION CONFIG
+======================= */
 app.use(
   session({
     name: "capstone.sid",
@@ -26,36 +29,40 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true,
       httpOnly: true,
-      sameSite: "none",
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      secure: true,        // 🔥 REQUIRED for HTTPS (Render)
+      sameSite: "none",    // 🔥 REQUIRED for cross-domain
+      maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
 
-/* PASSPORT */
+/* =======================
+   PASSPORT
+======================= */
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* ROUTES */
+/* =======================
+   ROUTES
+======================= */
 app.use("/auth", authRoutes);
 
-/* TEST */
+/* =======================
+   TEST ROUTES
+======================= */
 app.get("/", (req, res) => {
   res.send("Backend running");
 });
 
-/* AUTH CHECK */
-app.get("/auth/me", (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
-  res.json(req.user);
+app.get("/ping", (req, res) => {
+  res.send("pong");
 });
 
-/* START */
+/* =======================
+   START SERVER
+======================= */
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log("Server running on", PORT);
+  console.log("Server running on port", PORT);
 });
