@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "https://capstone-backend-c557.onrender.com",
   withCredentials: true,
 });
 

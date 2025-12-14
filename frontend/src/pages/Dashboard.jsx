@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "https://capstone-backend-c557.onrender.com",
   withCredentials: true,
 });
 
