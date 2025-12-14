@@ -5,16 +5,20 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import "./config/passport.js";
-
+import cors from "cors";
 const app = express();   // ✅ FIRST
 
 app.set("trust proxy", 1); // ✅ AFTER app exists
 
 const PORT = process.env.PORT || 8080;
 
+
+/* =======================
+   CORS
+======================= */
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: true, // IMPORTANT for OAuth redirects
     credentials: true,
   })
 );
