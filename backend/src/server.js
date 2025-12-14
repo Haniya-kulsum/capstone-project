@@ -24,6 +24,8 @@ app.use(
 app.use(express.json());
 
 /* SESSION */
+app.set("trust proxy", 1); // 🔥 REQUIRED for Render
+
 app.use(
   session({
     name: "capstone.sid",
@@ -33,8 +35,9 @@ app.use(
     proxy: true,
     cookie: {
       httpOnly: true,
-      secure: true,        // REQUIRED on Render (HTTPS)
-      sameSite: "none",    // REQUIRED for cross-domain
+      secure: true,        // 🔥 MUST be true on HTTPS
+      sameSite: "none",    // 🔥 REQUIRED for cross-site cookies
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
