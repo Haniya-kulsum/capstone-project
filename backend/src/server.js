@@ -2,23 +2,15 @@ import express from "express";
 import session from "express-session";
 import passport from "passport";
 import cors from "cors";
-import dotenv from "dotenv";
-
+import "./config/passport.js";
 import authRoutes from "./routes/auth.js";
-import "./config/passport.js"; // passport config
-
-dotenv.config();
 
 const app = express();
 
-/* =======================
-   TRUST PROXY (REQUIRED)
-   ======================= */
-app.set("trust proxy", 1); // 🔥 REQUIRED for Render HTTPS cookies
+/* 🔥 REQUIRED FOR RENDER */
+app.set("trust proxy", 1);
 
-/* =======================
-   CORS
-   ======================= */
+/* CORS */
 app.use(
   cors({
     origin: "https://capstone-frontend-yqjn.onrender.com",
@@ -26,56 +18,44 @@ app.use(
   })
 );
 
-/* =======================
-   BODY PARSER
-   ======================= */
-app.use(express.json());
-
-/* =======================
-   SESSION (CRITICAL FIX)
-   ======================= */
+/* SESSION */
 app.use(
   session({
     name: "capstone.sid",
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    proxy: true,
     cookie: {
+      secure: true,
       httpOnly: true,
-      secure: true,      // 🔥 MUST be true on Render
-      sameSite: "none",  // 🔥 REQUIRED for cross-site cookies
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
   })
 );
 
-/* =======================
-   PASSPORT
-   ======================= */
+/* PASSPORT */
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* =======================
-   ROUTES
-   ======================= */
+/* ROUTES */
 app.use("/auth", authRoutes);
 
-/* =======================
-   HEALTH CHECK
-   ======================= */
+/* TEST */
 app.get("/", (req, res) => {
   res.send("Backend running");
 });
 
-app.get("/ping", (req, res) => {
-  res.send("pong");
+/* AUTH CHECK */
+app.get("/auth/me", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  res.json(req.user);
 });
 
-/* =======================
-   START SERVER
-   ======================= */
+/* START */
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log("Server running on", PORT);
 });
