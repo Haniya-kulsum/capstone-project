@@ -48,6 +48,12 @@ app.get("/", (req, res) => {
   res.send("Backend running");
 });
 
+app.get("/ping", (req, res) => {
+  res.send("pong");
+});
+
+
+
 /* START SERVER */
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
