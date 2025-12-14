@@ -7,19 +7,22 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUser = async () => {
-    try {
-      const res = await api.get("/auth/me");
-      // 🔑 BACKEND RETURNS USER DIRECTLY
-      setUser(res.data || null);
-    } catch (err) {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/auth/me", {
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        });
+        setUser(res.data.user);
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchUser();
   }, []);
 
