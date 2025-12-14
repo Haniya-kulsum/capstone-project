@@ -22,6 +22,7 @@ function LoginPage() {
     </div>
   );
 }
+}
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
