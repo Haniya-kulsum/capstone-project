@@ -1,18 +1,24 @@
 import express from "express";
-import cors from "cors";
 import session from "express-session";
 import passport from "passport";
+import cors from "cors";
+import dotenv from "dotenv";
 
-import "./config/passport.js";
-import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import "./config/passport.js"; // passport config
+
+dotenv.config();
 
 const app = express();
 
-/* TRUST PROXY (RENDER) */
-app.set("trust proxy", 1);
+/* =======================
+   TRUST PROXY (REQUIRED)
+   ======================= */
+app.set("trust proxy", 1); // 🔥 REQUIRED for Render HTTPS cookies
 
-/* CORS */
+/* =======================
+   CORS
+   ======================= */
 app.use(
   cors({
     origin: "https://capstone-frontend-yqjn.onrender.com",
@@ -20,12 +26,14 @@ app.use(
   })
 );
 
-/* BODY PARSER */
+/* =======================
+   BODY PARSER
+   ======================= */
 app.use(express.json());
 
-/* SESSION */
-app.set("trust proxy", 1); // 🔥 REQUIRED for Render
-
+/* =======================
+   SESSION (CRITICAL FIX)
+   ======================= */
 app.use(
   session({
     name: "capstone.sid",
@@ -35,21 +43,27 @@ app.use(
     proxy: true,
     cookie: {
       httpOnly: true,
-      secure: true,        // 🔥 MUST be true on HTTPS
-      sameSite: "none",    // 🔥 REQUIRED for cross-site cookies
-      maxAge: 24 * 60 * 60 * 1000,
+      secure: true,      // 🔥 MUST be true on Render
+      sameSite: "none",  // 🔥 REQUIRED for cross-site cookies
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
   })
 );
 
-/* PASSPORT */
+/* =======================
+   PASSPORT
+   ======================= */
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* ROUTES */
+/* =======================
+   ROUTES
+   ======================= */
 app.use("/auth", authRoutes);
 
-/* TEST */
+/* =======================
+   HEALTH CHECK
+   ======================= */
 app.get("/", (req, res) => {
   res.send("Backend running");
 });
@@ -58,16 +72,10 @@ app.get("/ping", (req, res) => {
   res.send("pong");
 });
 
-
-
-/* START SERVER */
-const PORT = process.env.PORT;
+/* =======================
+   START SERVER
+   ======================= */
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
-
-/* DB */
-connectDB()
-  .then(() => console.log("MongoDB connected"))
-  .catch(console.error);
-
