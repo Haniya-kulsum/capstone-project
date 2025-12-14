@@ -16,5 +16,5 @@ COPY . .
 EXPOSE 10000
 
 # Start the server
-CMD ["node", "src/server.js"
+CMD ["node", "src/server.js"]
 
