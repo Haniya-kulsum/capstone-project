@@ -1,18 +1,17 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import api from "../api";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import api from "../api/axios";
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch logged-in user on app load
   const fetchUser = async () => {
     try {
       const res = await api.get("/auth/me");
-      setUser(res.data);
-    } catch (err) {
+      setUser(res.data.user || null);
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
@@ -23,23 +22,13 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
-  // ✅ LOGIN — THIS WAS MISSING
-  const login = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
-  };
-
-  // Logout user
   const logout = async () => {
-    try {
-      await api.get("/auth/logout");
-      setUser(null);
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
+    await api.get("/auth/logout");
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

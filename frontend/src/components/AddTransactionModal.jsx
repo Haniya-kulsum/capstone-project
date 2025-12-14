@@ -1,12 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext.jsx";
-
-const api = axios.create({
-  baseURL: "https://capstone-backend-c557.onrender.com",
-  withCredentials: true,
-});
+import api from "../api/axios";
 
 export default function AddTransactionModal({ open, onClose, onAdded }) {
   const { user } = useAuth();
@@ -24,11 +19,9 @@ export default function AddTransactionModal({ open, onClose, onAdded }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     await api.post(`/api/transactions/${user._id}`, form);
-
-    onAdded();   // refresh dashboard
-    onClose();   // close modal
+    onAdded();
+    onClose();
   };
 
   return (

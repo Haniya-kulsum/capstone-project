@@ -1,13 +1,9 @@
 import React, { useReducer, useState, useEffect } from "react";
 import useSWR from "swr";
-import axios from "axios";
+import api from "../api/axios";
 import { useAuth } from "../context/AuthContext.jsx";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
-const api = axios.create({
-  baseURL: "https://capstone-backend-c557.onrender.com",
-  withCredentials: true,
-});
 
 const fetcher = (url) => api.get(url).then((res) => res.data);
 
