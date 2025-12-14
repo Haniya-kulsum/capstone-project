@@ -10,7 +10,19 @@ export function AuthProvider({ children }) {
   const fetchUser = async () => {
     try {
       const res = await api.get("/auth/me");
-      setUser(res.data.user || null);
+      const u = res.data;
+
+      if (!u) {
+        setUser(null);
+      } else {
+        // 🔑 NORMALIZE GOOGLE USER
+        setUser({
+          id: u.id,
+          name: u.displayName,
+          email: u.emails?.[0]?.value,
+          avatarUrl: u.photos?.[0]?.value,
+        });
+      }
     } catch {
       setUser(null);
     } finally {

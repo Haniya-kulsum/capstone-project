@@ -1,15 +1,13 @@
-import React, { useReducer, useState, useEffect } from "react";
+import React, { useReducer, useState } from "react";
 import useSWR from "swr";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext.jsx";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
-
 const fetcher = (url) => api.get(url).then((res) => res.data);
 
 const COLORS = ["#0ea5e9", "#22c55e", "#eab308", "#f97316", "#ef4444"];
 
-// Reducer for category filter
 function filterReducer(state, action) {
   switch (action.type) {
     case "setCategory":
@@ -22,22 +20,14 @@ function filterReducer(state, action) {
 export default function Dashboard() {
   const { user, logout, loading } = useAuth();
 
-  // 🔑 REQUIRED: redirect to backend OAuth if not logged in
-  useEffect(() => {
-    if (!user) {
-      window.location.href =
-        "https://capstone-backend-c557.onrender.com/auth/google";
-    }
-  }, [user, loading]);
-
-  // 🔑 REQUIRED: don’t render UI while redirecting
+  // 🔑 IMPORTANT: prevent crash
+  if (loading) return null;
   if (!user) return null;
 
   const [filterState, dispatchFilter] = useReducer(filterReducer, {
     category: "all",
   });
 
-  // CREATE form state
   const [form, setForm] = useState({
     type: "expense",
     amount: "",
@@ -46,7 +36,6 @@ export default function Dashboard() {
     description: "",
   });
 
-  // EDIT form state
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
     amount: "",
@@ -55,32 +44,18 @@ export default function Dashboard() {
     description: "",
   });
 
-  // SWR data loading
   const {
     data: transactions,
-    isLoading: txLoading,
-    error: txError,
     mutate: mutateTransactions,
-  } = useSWR(`/api/transactions/${user._id}`, fetcher);
-
-  const {
-    data: rateData,
-    isLoading: rateLoading,
-    error: rateError,
-  } = useSWR(
-    "https://api.exchangerate.host/latest?base=USD&symbols=EUR",
-    (...args) => fetch(...args).then((r) => r.json())
-  );
+  } = useSWR(`/api/transactions/${user.id}`, fetcher);
 
   const txList = transactions ?? [];
 
-  // FILTER LOGIC
   const filteredTx =
     filterState.category === "all"
       ? txList
       : txList.filter((t) => t.category === filterState.category);
 
-  // TOTALS
   const total = filteredTx.reduce((sum, t) => sum + (t.amount || 0), 0);
 
   const byCategory = Object.values(
@@ -93,7 +68,6 @@ export default function Dashboard() {
     }, {})
   );
 
-  // CREATE HANDLERS
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
@@ -104,7 +78,7 @@ export default function Dashboard() {
     if (!form.amount || !form.date) return;
 
     await api.post("/api/transactions", {
-      userId: user._id,
+      userId: user.id,
       type: form.type,
       amount: Number(form.amount),
       category: form.category,
@@ -155,24 +129,21 @@ export default function Dashboard() {
     mutateTransactions();
   };
 
-  const cancelEdit = () => {
-    setEditingId(null);
-  };
+  const cancelEdit = () => setEditingId(null);
 
   return (
     <div className="app-shell">
-      {/* HEADER */}
       <header className="app-header">
         <div className="app-header-inner">
           <div className="app-title">
             <span className="app-title-main">Personal Finance Dashboard</span>
             <span className="app-title-sub">
-              Logged in as {user?.name} ({user?.email})
+              Logged in as {user.name} ({user.email})
             </span>
           </div>
           <div className="app-user">
             <div className="app-avatar">
-              {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+              {user.name.charAt(0).toUpperCase()}
             </div>
             <button className="btn-ghost" onClick={logout}>
               Logout
