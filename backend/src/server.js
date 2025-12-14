@@ -1,18 +1,15 @@
 import express from "express";
 import session from "express-session";
+import passport from "passport";
 import cors from "cors";
-import dotenv from "dotenv";
 
-import passport from "./config/passport.js"; // 🔥 REQUIRED
 import authRoutes from "./routes/auth.js";
 
-dotenv.config();
+// 🔥 THIS LINE IS WHAT YOU WERE MISSING
+import "./config/passport.js";
 
 const app = express();
 
-/* =======================
-   CORS
-======================= */
 app.use(
   cors({
     origin: "https://capstone-frontend-yqjn.onrender.com",
@@ -20,9 +17,6 @@ app.use(
   })
 );
 
-/* =======================
-   SESSION
-======================= */
 app.use(
   session({
     name: "capstone.sid",
@@ -30,32 +24,22 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      httpOnly: true,
-      secure: true,
       sameSite: "none",
-      maxAge: 1000 * 60 * 60 * 24,
+      secure: true,
     },
   })
 );
 
-/* =======================
-   PASSPORT
-======================= */
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* =======================
-   ROUTES
-======================= */
 app.use("/auth", authRoutes);
 
-/* =======================
-   TEST
-======================= */
-app.get("/", (req, res) => res.send("Backend running"));
+app.get("/", (req, res) => {
+  res.send("Backend running");
+});
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+  console.log("Server running on", PORT);
 });
-
