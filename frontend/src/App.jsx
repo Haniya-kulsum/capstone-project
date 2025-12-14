@@ -6,8 +6,6 @@ import Dashboard from "./pages/Dashboard.jsx";
 /* ---------------- LOGIN PAGE ---------------- */
 
 function LoginPage() {
-  const { login } = useAuth();
-
   return (
     <div className="login-screen">
       <div className="login-card card-animate">
@@ -16,10 +14,15 @@ function LoginPage() {
           Sign in with your Google account to view and manage your personal
           expense dashboard.
         </p>
-        <button onClick={login} className="btn-primary">
+
+        {/* 🔑 OAuth MUST be a redirect */}
+        <a
+          href="https://capstone-backend-c557.onrender.com/auth/google"
+          className="btn-primary"
+        >
           <span className="google-icon">G</span>
           Sign in with Google
-        </button>
+        </a>
       </div>
     </div>
   );

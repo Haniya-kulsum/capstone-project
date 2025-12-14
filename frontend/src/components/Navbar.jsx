@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Navbar() {
-  const { user, login, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -30,12 +30,12 @@ export default function Navbar() {
         )}
 
         {!user ? (
-          <button
-            onClick={login}
+          <a
+            href="https://capstone-backend-c557.onrender.com/auth/google"
             className="px-4 py-1.5 rounded-full bg-sky-600 text-white text-sm hover:bg-sky-700"
           >
             Sign in with Google
-          </button>
+          </a>
         ) : (
           <>
             <Link
