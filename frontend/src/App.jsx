@@ -4,9 +4,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 
 function LoginPage() {
-  const handleLogin = () => {
-	window.location.href = `https://capstone-project-ronh.onrender.com/auth/google`;
-	 };
+  const { login } = useAuth();
 
   return (
     <div className="login-screen">
@@ -16,7 +14,7 @@ function LoginPage() {
           Sign in with your Google account to view and manage your personal
           expense dashboard.
         </p>
-        <button onClick={handleLogin} className="btn-primary">
+        <button onClick={login} className="btn-primary">
           <span className="google-icon">G</span>
           Sign in with Google
         </button>
