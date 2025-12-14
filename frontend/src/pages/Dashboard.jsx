@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from "react";
+import React, { useReducer, useState, useEffect } from "react";
 import useSWR from "swr";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -25,6 +25,17 @@ function filterReducer(state, action) {
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+
+  // 🔑 REQUIRED: redirect to backend OAuth if not logged in
+  useEffect(() => {
+    if (!user) {
+      window.location.href =
+        "https://capstone-backend-c557.onrender.com/auth/google";
+    }
+  }, [user]);
+
+  // 🔑 REQUIRED: don’t render UI while redirecting
+  if (!user) return null;
 
   const [filterState, dispatchFilter] = useReducer(filterReducer, {
     category: "all",
@@ -54,7 +65,7 @@ export default function Dashboard() {
     isLoading: txLoading,
     error: txError,
     mutate: mutateTransactions,
-  } = useSWR(user ? `/api/transactions/${user._id}` : null, fetcher);
+  } = useSWR(`/api/transactions/${user._id}`, fetcher);
 
   const {
     data: rateData,
@@ -101,7 +112,7 @@ export default function Dashboard() {
       type: form.type,
       amount: Number(form.amount),
       category: form.category,
-      date: new Date(form.date).toISOString(),   // ✅ FIXED
+      date: new Date(form.date).toISOString(),
       description: form.description,
     });
 
@@ -116,13 +127,11 @@ export default function Dashboard() {
     mutateTransactions();
   };
 
-  // DELETE HANDLER
   const handleDelete = async (id) => {
     await api.delete(`/api/transactions/${id}`);
     mutateTransactions();
   };
 
-  // START EDITING
   const startEditing = (tx) => {
     setEditingId(tx._id);
     setEditForm({
@@ -138,12 +147,11 @@ export default function Dashboard() {
     setEditForm((f) => ({ ...f, [name]: value }));
   };
 
-  // SAVE EDIT
   const saveEdit = async (id) => {
     await api.put(`/api/transactions/${id}`, {
       amount: Number(editForm.amount),
       category: editForm.category,
-      date: new Date(editForm.date).toISOString(), // ✅ FIXED
+      date: new Date(editForm.date).toISOString(),
       description: editForm.description,
     });
 
@@ -157,7 +165,6 @@ export default function Dashboard() {
 
   return (
     <div className="app-shell">
-
       {/* HEADER */}
       <header className="app-header">
         <div className="app-header-inner">
