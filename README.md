@@ -1,293 +1,240 @@
-Personal Finance Dashboard – Full-Stack Capstone Project
+# Capstone Finance – Personal Expense Dashboard
 
-A fully deployed, full-stack Personal Finance Dashboard built with React, Express, MongoDB, Google OAuth, modern UI, external API integration, CRUD operations, animations, testing, DevContainer, and complete documentation.
+Capstone Finance is a full-stack personal finance web application that allows users to securely authenticate using Google OAuth and manage their income and expenses. The application demonstrates full CRUD functionality, database integration, external API usage, modern React features, and professional deployment.
 
-This project was developed as a capstone demonstrating professional software engineering competence across the stack.
+This project was built to satisfy all requirements of the Capstone Project Rubric.
 
- Live Deployment Links
-Frontend (React) – Vercel
+---
 
-🔗 https://YOUR_FRONTEND_DEPLOYMENT_URL_HERE
+## 🔗 Live Deployment Links
 
-Backend (Express API) – Google Cloud Run
+- **Frontend (Render – Static Site):**  
+  https://capstone-frontend-yqjn.onrender.com
 
-🔗 https://YOUR_BACKEND_DEPLOYMENT_URL_HERE
+- **Backend (Render – Web Service):**  
+  https://capstone-backend-c557.onrender.com
 
-Replace the URLs above after deployment.
+---
 
- Video Demonstration
+## 📌 Project Overview
 
-🔗 https://YOUR_VIDEO_LINK_HERE
+Capstone Finance enables users to:
+- Sign in securely using Google OAuth
+- Create, view, update, and delete financial transactions
+- Track income, expenses, and net balance
+- Visualize expenses by category
+- Interact with an external currency exchange API
+- Persist data securely in MongoDB Atlas
 
-(Shows authentication, CRUD, external API, dashboard UI, test execution, and design artifact explanation.)
+All features are available only to authenticated users.
 
- Tech Stack
-Frontend
+---
 
-React (Vite)
+## 🔐 Authentication & Authorization
 
-Context API (global auth state)
+- Implemented **Google OAuth 2.0** using `passport-google-oauth20`
+- Session-based authentication using `express-session`
+- Secure cookies configured with:
+  - `Secure: true`
+  - `SameSite: none`
+- Auth state managed on the frontend using React Context
+- Protected routes ensure unauthenticated users cannot access the dashboard
 
-useReducer (filtering workflow)
+This satisfies the **Login / Authentication** rubric requirement.
 
-External API integration (ExchangeRate API)
+---
 
-Recharts (data visualization library)
+## 🧾 CRUD Functionality (Express + MongoDB)
 
-Custom CSS animations
+The backend provides full CRUD functionality for transactions:
 
-Axios (HTTP client)
+### ➕ Create
+Users can add a new transaction with:
+- Type (income or expense)
+- Amount
+- Category
+- Date
+- Optional description
 
-Backend
+### 📖 Read
+- Users can view all transactions associated with their account
+- Data is fetched from MongoDB Atlas and sorted by date
 
-Node.js + Express
+### ✏️ Update
+- Existing transactions can be edited
+- Updates persist in the database immediately
 
-Google OAuth 2.0 (Passport.js)
+### 🗑️ Delete
+- Transactions can be permanently deleted
+- UI updates in real time after deletion
 
-MongoDB (Mongoose)
+All CRUD routes are implemented using Express and Mongoose and are fully integrated with the frontend.
 
-Full CRUD API for transactions
+This satisfies the **CRUD Functionality** rubric requirement.
 
-Sessions + Cookies
+---
 
-Cloud deployment (Google Cloud Run)
+## 🗄️ Database Integration
 
-Additional Tools
+- MongoDB Atlas cloud database
+- Mongoose ODM used for schema modeling and validation
+- Secure connection using environment variables
+- User-specific transaction isolation
+- Persistent data across sessions and page reloads
 
-Playwright (automated E2E test)
+This satisfies the **Database Integration** rubric requirement.
 
-DevContainer (reproducible environment)
+---
 
-PlantUML (sequence diagram)
+## ⚛️ Frontend – React Features
 
-Helmet, CORS, Morgan (security & logging)
+The frontend is built using **React + Vite** and includes:
 
- Features Overview (Mapped to Rubric)
- 1. Authentication (Google OAuth)
+### Advanced React Features
+- `useContext` for authentication state
+- `useReducer` for filter state management
+- `useSWR` for efficient data fetching and caching
+- Conditional rendering based on authentication state
 
-Secure login using Google OAuth via Passport.js
+### Interactivity & Personalization
+- Dynamic dashboard updates
+- User-specific data display
+- Filters by transaction type and category
+- Real-time UI updates after CRUD actions
 
-Maintains session with cookie-based auth
+This satisfies the **Advanced React Features** and **Interactivity & Personalization** rubric categories.
 
-Protected routes in React using <ProtectedRoute>
+---
 
-Displays personalized dashboard after login
+## 📊 Data Visualization
 
- 2. Full CRUD Functionality (Transactions API)
+- Uses **Recharts** library
+- Pie chart visualizing expenses by category
+- Responsive and interactive charts
+- Graceful handling when no data is available
 
-The app implements Create, Read, Update, Delete for the Transaction model.
+This satisfies the **Additional Library Usage** requirement.
 
-Operation	Route	Description
-Create	POST /api/transactions	Add a new transaction
-Read	GET /api/transactions/:userId	Fetch all transactions for logged-in user
-Update	PUT /api/transactions/:id	Edit transaction
-Delete	DELETE /api/transactions/:id	Delete transaction
+---
 
-Fully integrated with the React UI.
+## 🌍 External API Integration
 
- 3. External API Integration
+- Integrates the **Frankfurter Currency Exchange API**
+- Displays live USD → INR conversion rate
+- Demonstrates external API usage with error handling
+- Clearly labeled data source in the UI
 
-The dashboard fetches real-time currency conversion (USD → EUR) using:
+This satisfies the **External API Usage** rubric requirement.
 
-https://api.exchangerate.host/latest?base=USD&symbols=EUR
+---
 
+## 🎨 UI / UX & Accessibility
 
-Includes:
+- Clean, professional dashboard layout
+- Responsive design for different screen sizes
+- Consistent color palette and typography
+- Accessible contrast and readable text
+- Clear visual hierarchy and spacing
 
-Loading indicators
+This satisfies the **Deployment & Accessibility** rubric requirement.
 
-Error states
+---
 
-Clean UI presentation
+## 🚀 Deployment
 
- 4. Advanced React Features
+### Frontend
+- Deployed on **Render** as a static site
+- Built using Vite
+- Uses environment variables for backend API URL
 
-The project uses two advanced features required in the rubric:
+### Backend
+- Deployed on **Render** as a web service
+- Handles OAuth, sessions, API routes, and database access
+- Automatically restarts on deployment
 
-1️ Context API
+This satisfies the **Backend Deployment** rubric requirement.
 
-Used for global authentication state:
+---
 
-Tracks user login
+## 🧱 Tech Stack
 
-Handles logout
+### Frontend
+- React
+- Vite
+- Axios
+- SWR
+- Recharts
+- CSS (custom styling)
 
-Provides protected routing
+### Backend
+- Node.js
+- Express
+- MongoDB Atlas
+- Mongoose
+- Passport.js
+- Google OAuth 2.0
 
-2️ useReducer
+### Deployment
+- Render (Frontend & Backend)
+- MongoDB Atlas (Database)
 
-Used for filtering transactions by category:
+---
 
-function filterReducer(state, action) { … }
+## 📂 Project Structure
 
+frontend/
+├── src/
+│ ├── pages/
+│ │ ├── Dashboard.jsx
+│ │ └── Home.jsx
+│ ├── context/
+│ │ └── AuthContext.jsx
+│ ├── api/
+│ │ └── axios.js
+│ └── index.css
 
-These are meaningful integrations, NOT superficial.
+backend/
+├── src/
+│ ├── models/
+│ │ └── Transaction.js
+│ ├── routes/
+│ │ ├── auth.js
+│ │ └── transactions.js
+│ ├── config/
+│ │ └── passport.js
+│ └── server.js
 
- 5. Interactivity & Personalization
 
-Dashboard shows user's name and email
+---
 
-Expense chart updates dynamically for each user
 
-Filtering modifies chart + summary in real-time
+## Sequence Diagram
 
-Add Transaction form updates list automatically
+The following sequence diagram illustrates the complete system flow for the Capstone Finance application, including:
 
-Personalized avatar and greeting
+- Google OAuth authentication
+- Session handling with Passport.js
+- Dashboard data loading
+- CRUD operations for transactions
+- External API integration (Frankfurter currency API)
 
-Entire UI changes based on login state
+![Capstone Finance Sequence Diagram](docs/sequence-diagram.png)
 
- 6. Additional Library Integration
 
-The project uses:
 
- Recharts
+## 🎥 Video Demonstration
 
-For category-based spending visualization.
+The video demonstration includes:
+- Live deployment overview
+- Google OAuth login flow
+- Full CRUD functionality demonstration
+- React interactivity and filtering
+- External API usage
+- Database persistence validation
 
- 7. Animation
+---
 
-Custom CSS animation applied to all dashboard components:
+## 🏁 Conclusion
 
-Smooth fade-in
+Capstone Finance is a complete, production-ready full-stack application that demonstrates authentication, CRUD functionality, database integration, external APIs, modern React practices, and professional deployment. The project satisfies all rubric requirements and showcases practical full-stack development skills.
 
-Lift-up transitions
-
-Animated card rendering
-
-Animated login card
-
-This satisfies the “meaningful animation” requirement.
-
- Project Architecture
-capstone-project/
- ├── backend/
- │   ├── src/
- │   │   ├── config/
- │   │   ├── models/
- │   │   ├── routes/
- │   │   └── server.js
- │   ├── package.json
- │   └── Dockerfile
- │
- ├── frontend/
- │   ├── src/
- │   │   ├── context/
- │   │   ├── pages/
- │   │   ├── App.jsx
- │   │   └── main.jsx
- │   ├── public/
- │   └── package.json
- │
- ├── .devcontainer/
- ├── README.md
- └── tests/
-     └── playwright.spec.ts
-
- Automated Testing (Playwright)
- Test Workflow Covered
-
-✔ User loads dashboard
-✔ User logs in
-✔ User creates a transaction
-✔ UI automatically updates with new transaction
-
- How to run the test
-cd frontend
-npx playwright install
-npx playwright test
-
-
-If backend is deployed, adjust test with deployed URL.
-
- Database (MongoDB) Schema
-Transaction Model
-{
-  userId: ObjectId,
-  type: "expense" | "income",
-  amount: Number,
-  category: String,
-  date: Date,
-  description: String,
-}
-
-User Model
-{
-  googleId: String,
-  email: String,
-  name: String,
-  avatarUrl: String
-}
-
- Backend API Documentation
-POST /api/transactions
-
-Create a transaction.
-
-GET /api/transactions/:userId
-
-Return all user transactions.
-
-PUT /api/transactions/:id
-
-Update a transaction.
-
-DELETE /api/transactions/:id
-
-Delete a transaction.
-
-GET /auth/google
-
-Begin Google Login.
-
-GET /auth/me
-
-Returns authenticated user.
-
- DevContainer Instructions
-
-The .devcontainer folder contains:
-
-Dockerfile with Node 20
-
-Extensions for JS/TS, Docker, ESLint
-
-Port forwarding settings
-
-Open in VS Code:
-
-Dev Containers: Reopen in Container
-
-
-Everything installs automatically.
-
- Running the Project Locally
-Backend
-cd backend
-npm install
-npm run dev
-
-Frontend
-cd frontend
-npm install
-npm run dev
-
- Deployment Instructions (Google Cloud Run)
-1. Authenticate
-gcloud auth login
-
-2. Build + Deploy Backend
-gcloud run deploy finance-backend \
-  --source . \
-  --allow-unauthenticated \
-  --region us-east1 \
-  --set-env-vars GOOGLE_CLIENT_ID=... \
-  --set-env-vars GOOGLE_CLIENT_SECRET=... \
-  --set-env-vars MONGO_URI=... \
-  --set-env-vars SESSION_SECRET=...
-
-3. Update Frontend .env
-VITE_API_URL = https://your-cloud-run-url
-
-4. Deploy Frontend to Vercel
-vercel deploy --prod

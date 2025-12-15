@@ -1,21 +1,27 @@
 import React from "react";
 
 export default function Home() {
+  const API = import.meta.env.VITE_API_URL || "https://capstone-backend-c557.onrender.com";
+
   return (
-    <main className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-4">Capstone Finance</h1>
+    <div className="center-message" style={{ minHeight: "100vh" }}>
+      <div className="card card-pad" style={{ width: "min(520px, 100%)" }}>
+        <div className="card-title" style={{ fontSize: 20 }}>
+          Capstone Finance
+        </div>
 
-      <p className="text-slate-700 mb-6">
-        Sign in with your Google account to view and manage your personal expense
-        dashboard.
-      </p>
+        <div className="card-sub" style={{ marginBottom: 14 }}>
+          Sign in with your Google account to view and manage your personal expense dashboard.
+        </div>
 
-      <a
-        href="https://capstone-backend-c557.onrender.com/auth/google"
-        className="inline-block px-4 py-2 rounded-lg bg-sky-600 text-white text-sm hover:bg-sky-700"
-      >
-        Sign in with Google
-      </a>
-    </main>
+        <a
+          className="btn btn-primary"
+          href={`${API}/auth/google`}
+          style={{ width: "100%", display: "inline-block", textAlign: "center" }}
+        >
+          Continue with Google
+        </a>
+      </div>
+    </div>
   );
 }
