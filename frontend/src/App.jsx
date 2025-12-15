@@ -1,40 +1,36 @@
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import Dashboard from "./pages/Dashboard";
 
 function Login() {
   return (
-    <div className="login-screen">
-      <div className="login-card">
-        <h1>Capstone Finance</h1>
-        <p>
-          Sign in with your Google account to view and manage your personal
-          expense dashboard.
+    <div className="auth-shell">
+      <div className="auth-card" role="region" aria-label="Sign in">
+        <div className="auth-badge">Capstone Finance</div>
+        <h1 className="auth-title">Personal Finance Dashboard</h1>
+        <p className="auth-subtitle">
+          Sign in with Google to manage your income and expenses securely.
         </p>
 
         <a
-          className="btn-primary"
+          className="btn btn-primary btn-lg"
           href="https://capstone-backend-c557.onrender.com/auth/google"
         >
-          Sign in with Google
+          Continue with Google
         </a>
+
+        <p className="auth-footnote">
+          Your session is stored securely using HTTP-only cookies.
+        </p>
       </div>
     </div>
   );
 }
 
-import Dashboard from "./pages/Dashboard";
-
-
 function AppContent() {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return <div className="center-message">Loading...</div>;
-  }
-
-  if (!user) {
-    return <Login />;
-  }
-
+  if (loading) return <div className="center-message">Loading…</div>;
+  if (!user) return <Login />;
   return <Dashboard />;
 }
 
@@ -45,5 +41,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-  
-

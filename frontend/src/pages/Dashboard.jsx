@@ -3,290 +3,317 @@ import useSWR from "swr";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
-import { motion, AnimatePresence } from "framer-motion";
 
-// ------------------ SWR fetchers ------------------
 const fetcher = (url) => api.get(url).then((res) => res.data);
+const fxFetcher = (url) => fetch(url).then((r) => r.json());
 
-// External API (no key): exchange rates
-const fxFetcher = (url) => fetch(url).then((r) => {
-  if (!r.ok) throw new Error("External API failed");
-  return r.json();
-});
+const PIE_COLORS = ["#60a5fa", "#34d399", "#fbbf24", "#f97316", "#fb7185", "#a78bfa"];
 
-const COLORS = ["#0ea5e9", "#22c55e", "#eab308", "#f97316", "#ef4444"];
-
-// ------------------ reducers ------------------
-function filterReducer(state, action) {
+function filtersReducer(state, action) {
   switch (action.type) {
-    case "setCategory":
-      return { ...state, category: action.value };
     case "setType":
       return { ...state, type: action.value };
+    case "setCategory":
+      return { ...state, category: action.value };
     case "setSort":
       return { ...state, sort: action.value };
+    case "setQuery":
+      return { ...state, q: action.value };
     default:
       return state;
   }
 }
 
-function uiReducer(state, action) {
-  switch (action.type) {
-    case "openCreate":
-      return { ...state, modalOpen: true, editingId: null };
-    case "openEdit":
-      return { ...state, modalOpen: true, editingId: action.id };
-    case "closeModal":
-      return { ...state, modalOpen: false, editingId: null };
-    default:
-      return state;
-  }
+function formatMoney(n) {
+  const num = Number(n || 0);
+  return num.toLocaleString(undefined, { style: "currency", currency: "USD" });
 }
 
-// ------------------ helpers ------------------
-function toDateInputValue(d) {
-  // supports ISO date string
-  if (!d) return "";
-  return String(d).slice(0, 10);
+function formatDateInput(d) {
+  const dt = new Date(d);
+  if (Number.isNaN(dt.getTime())) return "";
+  const yyyy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function Modal({ title, children, onClose }) {
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="modal-head">
+          <h2 className="modal-title">{title}</h2>
+          <button className="btn btn-ghost" onClick={onClose} aria-label="Close modal">
+            ✕
+          </button>
+        </div>
+        <div className="modal-body">{children}</div>
+      </div>
+    </div>
+  );
 }
 
 export default function Dashboard() {
   const { user, logout, loading } = useAuth();
-  const userId = user?._id || user?.id;
-
-  const [filterState, dispatchFilter] = useReducer(filterReducer, {
-    category: "all",
-    type: "all",
-    sort: "newest",
-  });
-
-  const [uiState, dispatchUI] = useReducer(uiReducer, {
-    modalOpen: false,
-    editingId: null,
-  });
-
-  const [toast, setToast] = useState(null); // simple toast (no extra lib)
-
   const safeName = user?.name || user?.email || "User";
+  const userId = user?._id || user?.id; // whatever you store from OAuth
 
-  // ------------------ data ------------------
-  const {
-    data: transactions,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR(userId ? `/api/transactions/${userId}` : null, fetcher);
+  const [filters, dispatch] = useReducer(filtersReducer, {
+    type: "all",
+    category: "all",
+    sort: "newest",
+    q: "",
+  });
 
-  // External API card (USD -> INR)
-  const {
-    data: fxData,
-    error: fxError,
-    isLoading: fxLoading,
-  } = useSWR(
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editing, setEditing] = useState(null); // transaction object or null
+  const [form, setForm] = useState({
+    type: "expense",
+    amount: "",
+    category: "General",
+    date: formatDateInput(new Date()),
+    description: "",
+  });
+
+  const { data: transactions, error, mutate } = useSWR(
+    userId ? `/api/transactions/${userId}` : null,
+    fetcher
+  );
+
+  // External API requirement (Frankfurter)
+  const { data: fxData } = useSWR(
     "https://api.frankfurter.app/latest?from=USD&to=INR",
     fxFetcher
   );
 
-  // ------------------ computed ------------------
-  const filtered = useMemo(() => {
-    if (!transactions) return [];
-
-    let list = [...transactions];
-
-    if (filterState.type !== "all") {
-      list = list.filter((t) => t.type === filterState.type);
-    }
-
-    if (filterState.category !== "all") {
-      list = list.filter((t) => (t.category || "").toLowerCase() === filterState.category);
-    }
-
-    list.sort((a, b) => {
-      const ad = new Date(a.date).getTime();
-      const bd = new Date(b.date).getTime();
-      return filterState.sort === "newest" ? bd - ad : ad - bd;
-    });
-
-    return list;
-  }, [transactions, filterState]);
+  const fxRate = fxData?.rates?.INR;
 
   const categories = useMemo(() => {
-    const set = new Set();
-    (transactions || []).forEach((t) => {
-      if (t.category) set.add(String(t.category).toLowerCase());
-    });
-    return ["all", ...Array.from(set).sort()];
+    const set = new Set((transactions || []).map((t) => t.category).filter(Boolean));
+    return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [transactions]);
 
+  const filtered = useMemo(() => {
+    const list = [...(transactions || [])];
+
+    const q = filters.q.trim().toLowerCase();
+    const byQuery = (t) => {
+      if (!q) return true;
+      const hay = `${t.category} ${t.description || ""} ${t.type}`.toLowerCase();
+      return hay.includes(q);
+    };
+
+    const byType = (t) => (filters.type === "all" ? true : t.type === filters.type);
+    const byCategory = (t) =>
+      filters.category === "all" ? true : t.category === filters.category;
+
+    const result = list.filter((t) => byQuery(t) && byType(t) && byCategory(t));
+
+    result.sort((a, b) => {
+      const da = new Date(a.date).getTime();
+      const db = new Date(b.date).getTime();
+      if (filters.sort === "oldest") return da - db;
+      if (filters.sort === "amountHigh") return Number(b.amount) - Number(a.amount);
+      if (filters.sort === "amountLow") return Number(a.amount) - Number(b.amount);
+      return db - da; // newest default
+    });
+
+    return result;
+  }, [transactions, filters]);
+
   const totals = useMemo(() => {
-    const income = (filtered || [])
-      .filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+    const txs = transactions || [];
+    let income = 0;
+    let expense = 0;
+    for (const t of txs) {
+      const amt = Number(t.amount || 0);
+      if (t.type === "income") income += amt;
+      else expense += amt;
+    }
+    return {
+      count: txs.length,
+      income,
+      expense,
+      net: income - expense,
+    };
+  }, [transactions]);
 
-    const expense = (filtered || [])
-      .filter((t) => t.type === "expense")
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
-
-    return { income, expense, net: income - expense };
-  }, [filtered]);
-
-  const pieData = useMemo(() => {
+  const expenseByCategory = useMemo(() => {
+    const txs = transactions || [];
     const map = new Map();
-    filtered
-      .filter((t) => t.type === "expense")
-      .forEach((t) => {
-        const k = t.category || "Other";
-        map.set(k, (map.get(k) || 0) + Number(t.amount || 0));
-      });
+    for (const t of txs) {
+      if (t.type !== "expense") continue;
+      const key = t.category || "Uncategorized";
+      map.set(key, (map.get(key) || 0) + Number(t.amount || 0));
+    }
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [transactions]);
 
-    return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
-  }, [filtered]);
+  function openCreate() {
+    setEditing(null);
+    setForm({
+      type: "expense",
+      amount: "",
+      category: "General",
+      date: formatDateInput(new Date()),
+      description: "",
+    });
+    setIsModalOpen(true);
+  }
 
-  // ------------------ guards ------------------
-  if (loading) return <div className="center-message">Loading…</div>;
-  if (!user) return <div className="center-message">Not logged in</div>;
-  if (error) return <div className="center-message">Failed to load transactions</div>;
-  if (isLoading || !transactions) return <div className="center-message">Loading dashboard…</div>;
+  function openEdit(tx) {
+    setEditing(tx);
+    setForm({
+      type: tx.type,
+      amount: String(tx.amount ?? ""),
+      category: tx.category || "General",
+      date: formatDateInput(tx.date),
+      description: tx.description || "",
+    });
+    setIsModalOpen(true);
+  }
 
-  // ------------------ CRUD actions ------------------
-  async function onCreate(payload) {
+  async function saveTransaction(e) {
+    e.preventDefault();
+
+    const payload = {
+      userId: String(userId),
+      type: form.type,
+      amount: Number(form.amount),
+      category: form.category.trim(),
+      date: new Date(form.date).toISOString(),
+      description: form.description.trim(),
+    };
+
+    if (!payload.category || !payload.date || Number.isNaN(payload.amount)) {
+      alert("Please fill in amount, category, and date.");
+      return;
+    }
+
     try {
-      await api.post("/api/transactions", payload);
-      setToast({ type: "success", msg: "Transaction added ✅" });
-      dispatchUI({ type: "closeModal" });
-      mutate();
-    } catch (e) {
-      setToast({ type: "error", msg: "Failed to add transaction" });
-      console.error(e);
+      if (editing?._id) {
+        await api.put(`/api/transactions/${editing._id}`, payload);
+      } else {
+        await api.post(`/api/transactions`, payload);
+      }
+      await mutate(); // refresh list
+      setIsModalOpen(false);
+    } catch (err) {
+      alert(err?.response?.data?.error || err.message || "Failed to save.");
     }
   }
 
-  async function onUpdate(id, payload) {
-    try {
-      await api.put(`/api/transactions/${id}`, payload);
-      setToast({ type: "success", msg: "Transaction updated ✅" });
-      dispatchUI({ type: "closeModal" });
-      mutate();
-    } catch (e) {
-      setToast({ type: "error", msg: "Failed to update transaction" });
-      console.error(e);
-    }
-  }
-
-  async function onDelete(id) {
-    const ok = confirm("Delete this transaction?");
+  async function deleteTransaction(id) {
+    const ok = confirm("Delete this transaction? This cannot be undone.");
     if (!ok) return;
 
     try {
       await api.delete(`/api/transactions/${id}`);
-      setToast({ type: "success", msg: "Transaction deleted ✅" });
-      mutate();
-    } catch (e) {
-      setToast({ type: "error", msg: "Failed to delete transaction" });
-      console.error(e);
+      await mutate();
+    } catch (err) {
+      alert(err?.response?.data?.error || err.message || "Failed to delete.");
     }
   }
 
-  const editingTx =
-    uiState.editingId ? transactions.find((t) => t._id === uiState.editingId) : null;
+  if (loading) return <div className="center-message">Loading…</div>;
+  if (!user) return <div className="center-message">Not logged in</div>;
+  if (error) return <div className="center-message">Failed to load transactions.</div>;
+  if (!transactions) return <div className="center-message">Loading dashboard…</div>;
 
-  // ------------------ UI ------------------
   return (
     <div className="app-shell">
-      {/* Simple Toast */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="toast"
-            onAnimationComplete={() => {
-              setTimeout(() => setToast(null), 1800);
-            }}
-          >
-            <span className={toast.type === "success" ? "toast-success" : "toast-error"}>
-              {toast.msg}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <header className="app-header">
-        <div className="app-header-inner">
-          <div className="app-title">
-            <span className="app-title-main">Personal Finance Dashboard</span>
-            <span className="app-title-sub">Logged in as {safeName}</span>
+      <header className="topbar">
+        <div className="topbar-inner">
+          <div className="brand">
+            <div className="brand-title">Personal Finance Dashboard</div>
+            <div className="brand-sub">Logged in as {safeName}</div>
           </div>
 
-          <div className="app-user">
-            <div className="app-avatar">{safeName.charAt(0).toUpperCase()}</div>
-            <button className="btn-ghost" onClick={logout}>
+          <div className="topbar-actions">
+            <div className="avatar" aria-label={`Logged in as ${safeName}`}>
+              {String(safeName).charAt(0).toUpperCase()}
+            </div>
+            <button className="btn btn-ghost" onClick={logout}>
               Logout
             </button>
           </div>
         </div>
       </header>
 
-      <main className="app-main">
-        {/* Top row: summary + external API */}
-        <div className="grid grid-2">
-          <div className="card card-animate">
-            <div className="card-title">Overview</div>
-            <div className="stat-row">
-              <div className="stat">
-                <div className="stat-label">Transactions</div>
-                <div className="stat-value">{filtered.length}</div>
-              </div>
-              <div className="stat">
-                <div className="stat-label">Income</div>
-                <div className="stat-value">${totals.income.toFixed(2)}</div>
-              </div>
-              <div className="stat">
-                <div className="stat-label">Expense</div>
-                <div className="stat-value">${totals.expense.toFixed(2)}</div>
-              </div>
-              <div className="stat">
-                <div className="stat-label">Net</div>
-                <div className={`stat-value ${totals.net >= 0 ? "pos" : "neg"}`}>
-                  ${totals.net.toFixed(2)}
-                </div>
-              </div>
-            </div>
-
-            <div className="actions-row">
-              <button className="btn-primary" onClick={() => dispatchUI({ type: "openCreate" })}>
+      <main className="container">
+        <div className="grid">
+          <section className="card">
+            <div className="card-head">
+              <h2 className="card-title">Overview</h2>
+              <button className="btn btn-primary" onClick={openCreate}>
                 + Add Transaction
               </button>
             </div>
-          </div>
 
-          <div className="card card-animate">
-            <div className="card-title">External API (USD → INR)</div>
-            {fxLoading && <div className="muted">Loading exchange rate…</div>}
-            {fxError && <div className="error-text">Failed to load exchange rate</div>}
-            {fxData && (
-              <div className="fx-row">
-                <div className="fx-big">
-                  1 USD = {fxData?.rates?.INR?.toFixed?.(2)} INR
-                </div>
-                <div className="muted">Source: Frankfurter API</div>
+            <div className="stats">
+              <div className="stat">
+                <div className="stat-label">Transactions</div>
+                <div className="stat-value">{totals.count}</div>
               </div>
-            )}
-          </div>
-        </div>
+              <div className="stat">
+                <div className="stat-label">Income</div>
+                <div className="stat-value">{formatMoney(totals.income)}</div>
+              </div>
+              <div className="stat">
+                <div className="stat-label">Expense</div>
+                <div className="stat-value">{formatMoney(totals.expense)}</div>
+              </div>
+              <div className="stat stat-net">
+                <div className="stat-label">Net</div>
+                <div className="stat-value">{formatMoney(totals.net)}</div>
+              </div>
+            </div>
+          </section>
 
-        {/* Filters + Chart */}
-        <div className="grid grid-2">
-          <div className="card">
-            <div className="card-title">Filters</div>
+          <section className="card">
+            <h2 className="card-title">External API (USD → INR)</h2>
+            <p className="muted">
+              {fxRate ? (
+                <>
+                  <span className="fx-big">1 USD = {fxRate} INR</span>
+                  <br />
+                  Source: Frankfurter API
+                </>
+              ) : (
+                "Loading exchange rate…"
+              )}
+            </p>
+          </section>
 
-            <div className="filter-grid">
+          <section className="card">
+            <h2 className="card-title">Filters</h2>
+
+            <div className="filters">
+              <label className="field">
+                <span className="field-label">Search</span>
+                <input
+                  className="input"
+                  value={filters.q}
+                  onChange={(e) => dispatch({ type: "setQuery", value: e.target.value })}
+                  placeholder="category / description…"
+                />
+              </label>
+
               <label className="field">
                 <span className="field-label">Type</span>
                 <select
-                  value={filterState.type}
-                  onChange={(e) => dispatchFilter({ type: "setType", value: e.target.value })}
+                  className="select"
+                  value={filters.type}
+                  onChange={(e) => dispatch({ type: "setType", value: e.target.value })}
                 >
                   <option value="all">All</option>
                   <option value="income">Income</option>
@@ -297,8 +324,11 @@ export default function Dashboard() {
               <label className="field">
                 <span className="field-label">Category</span>
                 <select
-                  value={filterState.category}
-                  onChange={(e) => dispatchFilter({ type: "setCategory", value: e.target.value })}
+                  className="select"
+                  value={filters.category}
+                  onChange={(e) =>
+                    dispatch({ type: "setCategory", value: e.target.value })
+                  }
                 >
                   {categories.map((c) => (
                     <option key={c} value={c}>
@@ -311,218 +341,180 @@ export default function Dashboard() {
               <label className="field">
                 <span className="field-label">Sort</span>
                 <select
-                  value={filterState.sort}
-                  onChange={(e) => dispatchFilter({ type: "setSort", value: e.target.value })}
+                  className="select"
+                  value={filters.sort}
+                  onChange={(e) => dispatch({ type: "setSort", value: e.target.value })}
                 >
                   <option value="newest">Newest</option>
                   <option value="oldest">Oldest</option>
+                  <option value="amountHigh">Amount (High)</option>
+                  <option value="amountLow">Amount (Low)</option>
                 </select>
               </label>
             </div>
-          </div>
+          </section>
 
-          <div className="card">
-            <div className="card-title">Expenses by Category</div>
-            {pieData.length === 0 ? (
-              <div className="muted">No expense data to chart yet.</div>
+          <section className="card">
+            <h2 className="card-title">Expenses by Category</h2>
+
+            {expenseByCategory.length === 0 ? (
+              <p className="muted">No expense data to chart yet.</p>
             ) : (
-              <div style={{ width: "100%", height: 240 }}>
-                <ResponsiveContainer>
+              <div className="chartWrap" aria-label="Expenses by category chart">
+                <ResponsiveContainer width="100%" height={240}>
                   <PieChart>
-                    <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={90}>
-                      {pieData.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    <Pie
+                      data={expenseByCategory}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={60}
+                      outerRadius={95}
+                      paddingAngle={2}
+                    >
+                      {expenseByCategory.map((_, idx) => (
+                        <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip formatter={(v) => formatMoney(v)} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             )}
-          </div>
-        </div>
+          </section>
 
-        {/* Transactions Table */}
-        <div className="card">
-          <div className="card-title">Transactions</div>
-
-          {filtered.length === 0 ? (
-            <div className="muted">No transactions yet. Add one to get started.</div>
-          ) : (
-            <div className="table">
-              <div className="table-head">
-                <div>Date</div>
-                <div>Type</div>
-                <div>Category</div>
-                <div className="right">Amount</div>
-                <div className="right">Actions</div>
-              </div>
-
-              <AnimatePresence initial={false}>
-                {filtered.map((tx) => (
-                  <motion.div
-                    key={tx._id}
-                    layout
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.18 }}
-                    className="table-row"
-                  >
-                    <div>{toDateInputValue(tx.date)}</div>
-                    <div>
-                      <span className={`pill ${tx.type === "income" ? "pill-green" : "pill-red"}`}>
-                        {tx.type}
-                      </span>
-                    </div>
-                    <div>{tx.category || "—"}</div>
-                    <div className="right">${Number(tx.amount || 0).toFixed(2)}</div>
-                    <div className="right row-actions">
-                      <button
-                        className="btn-small"
-                        onClick={() => dispatchUI({ type: "openEdit", id: tx._id })}
-                      >
-                        Edit
-                      </button>
-                      <button className="btn-small danger" onClick={() => onDelete(tx._id)}>
-                        Delete
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+          <section className="card card-full">
+            <div className="card-head">
+              <h2 className="card-title">Transactions</h2>
+              <div className="muted">{filtered.length} shown</div>
             </div>
-          )}
+
+            {filtered.length === 0 ? (
+              <p className="muted">No transactions yet. Add one to get started.</p>
+            ) : (
+              <div className="tableWrap">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Category</th>
+                      <th>Description</th>
+                      <th className="right">Amount</th>
+                      <th className="right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((tx) => (
+                      <tr key={tx._id}>
+                        <td>{new Date(tx.date).toLocaleDateString()}</td>
+                        <td>
+                          <span
+                            className={`pill ${
+                              tx.type === "income" ? "pill-income" : "pill-expense"
+                            }`}
+                          >
+                            {tx.type}
+                          </span>
+                        </td>
+                        <td>{tx.category}</td>
+                        <td className="muted">{tx.description || "—"}</td>
+                        <td className="right">{formatMoney(tx.amount)}</td>
+                        <td className="right">
+                          <div className="rowActions">
+                            <button
+                              className="btn btn-ghost"
+                              onClick={() => openEdit(tx)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-danger"
+                              onClick={() => deleteTransaction(tx._id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
         </div>
-
-        {/* Modal (Create/Edit) */}
-        <AnimatePresence>
-          {uiState.modalOpen && (
-            <motion.div
-              className="modal-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => dispatchUI({ type: "closeModal" })}
-            >
-              <motion.div
-                className="modal"
-                initial={{ opacity: 0, y: 14, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 14, scale: 0.98 }}
-                transition={{ duration: 0.18 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="modal-title">
-                  {editingTx ? "Edit Transaction" : "Add Transaction"}
-                </div>
-
-                <TransactionForm
-                  userId={userId}
-                  initial={editingTx}
-                  onCancel={() => dispatchUI({ type: "closeModal" })}
-                  onSubmit={(payload) => {
-                    if (editingTx) return onUpdate(editingTx._id, payload);
-                    return onCreate(payload);
-                  }}
-                />
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </main>
+
+      {isModalOpen && (
+        <Modal title={editing ? "Edit Transaction" : "Add Transaction"} onClose={() => setIsModalOpen(false)}>
+          <form onSubmit={saveTransaction} className="form">
+            <label className="field">
+              <span className="field-label">Type</span>
+              <select
+                className="select"
+                value={form.type}
+                onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
+              >
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+            </label>
+
+            <label className="field">
+              <span className="field-label">Amount (USD)</span>
+              <input
+                className="input"
+                inputMode="decimal"
+                value={form.amount}
+                onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
+                placeholder="e.g., 25.50"
+                required
+              />
+            </label>
+
+            <label className="field">
+              <span className="field-label">Category</span>
+              <input
+                className="input"
+                value={form.category}
+                onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+                placeholder="e.g., Groceries"
+                required
+              />
+            </label>
+
+            <label className="field">
+              <span className="field-label">Date</span>
+              <input
+                className="input"
+                type="date"
+                value={form.date}
+                onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
+                required
+              />
+            </label>
+
+            <label className="field field-full">
+              <span className="field-label">Description</span>
+              <input
+                className="input"
+                value={form.description}
+                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Optional note…"
+              />
+            </label>
+
+            <div className="form-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setIsModalOpen(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary">
+                {editing ? "Save Changes" : "Add Transaction"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
-  );
-}
-
-// ------------------ Form Component ------------------
-function TransactionForm({ userId, initial, onSubmit, onCancel }) {
-  const [form, setForm] = useState(() => ({
-    type: initial?.type || "expense",
-    amount: initial?.amount != null ? String(initial.amount) : "",
-    category: initial?.category || "",
-    date: initial?.date ? String(initial.date).slice(0, 10) : "",
-    description: initial?.description || "",
-  }));
-
-  function change(e) {
-    const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: value }));
-  }
-
-  function submit(e) {
-    e.preventDefault();
-
-    const payload = {
-      userId,
-      type: form.type,
-      amount: Number(form.amount),
-      category: form.category.trim(),
-      date: form.date,
-      description: form.description.trim(),
-    };
-
-    onSubmit(payload);
-  }
-
-  return (
-    <form onSubmit={submit} className="form">
-      <div className="form-grid">
-        <label className="field">
-          <span className="field-label">Type</span>
-          <select name="type" value={form.type} onChange={change}>
-            <option value="income">income</option>
-            <option value="expense">expense</option>
-          </select>
-        </label>
-
-        <label className="field">
-          <span className="field-label">Amount</span>
-          <input
-            name="amount"
-            value={form.amount}
-            onChange={change}
-            inputMode="decimal"
-            placeholder="e.g. 25.50"
-            required
-          />
-        </label>
-
-        <label className="field">
-          <span className="field-label">Category</span>
-          <input
-            name="category"
-            value={form.category}
-            onChange={change}
-            placeholder="e.g. groceries"
-            required
-          />
-        </label>
-
-        <label className="field">
-          <span className="field-label">Date</span>
-          <input type="date" name="date" value={form.date} onChange={change} required />
-        </label>
-
-        <label className="field field-full">
-          <span className="field-label">Description (optional)</span>
-          <input
-            name="description"
-            value={form.description}
-            onChange={change}
-            placeholder="Short note…"
-          />
-        </label>
-      </div>
-
-      <div className="modal-actions">
-        <button type="button" className="btn-ghost" onClick={onCancel}>
-          Cancel
-        </button>
-        <button type="submit" className="btn-primary">
-          {initial ? "Save Changes" : "Add Transaction"}
-        </button>
-      </div>
-    </form>
   );
 }
