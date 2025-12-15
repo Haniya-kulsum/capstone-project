@@ -8,7 +8,7 @@ router.post("/", async (req, res) => {
   try {
     const { userId, type, amount, category, date, description } = req.body;
 
-    if (!userId || !type || !amount || !category || !date) {
+    if (!userId || !type || amount === undefined || !category || !date) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -25,7 +25,7 @@ router.post("/", async (req, res) => {
     res.status(201).json(tx);
   } catch (err) {
     console.error("❌ Create transaction error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -33,12 +33,11 @@ router.post("/", async (req, res) => {
 router.get("/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
-
     const txs = await Transaction.find({ userId }).sort({ date: -1 });
     res.json(txs);
   } catch (err) {
     console.error("❌ Fetch transactions error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: err.message }); // ✅ show real error
   }
 });
 
@@ -59,7 +58,7 @@ router.put("/:id", async (req, res) => {
     res.json(updated);
   } catch (err) {
     console.error("❌ Update transaction error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -77,7 +76,7 @@ router.delete("/:id", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error("❌ Delete transaction error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: err.message });
   }
 });
 
