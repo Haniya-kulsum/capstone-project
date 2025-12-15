@@ -23,13 +23,14 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    proxy: true, // 🔑 THIS WAS MISSING
+    proxy: true,
     cookie: {
       secure: true,
       sameSite: "none",
     },
   })
 );
+
 
 app.use(passport.initialize());
 app.use(passport.session());
