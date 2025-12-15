@@ -1,8 +1,9 @@
 import React, { useReducer, useState } from "react";
 import useSWR from "swr";
 import api from "../api/axios";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/AuthContext";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
+
 
 const fetcher = (url) => api.get(url).then((res) => res.data);
 
