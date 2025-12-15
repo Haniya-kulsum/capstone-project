@@ -220,6 +220,36 @@ The following sequence diagram illustrates the complete system flow for the Caps
 
 ![Capstone Finance Sequence Diagram](docs/sequence-diagram.png)
 
+## ✅ Automated Testing (Playwright)
+
+This project includes an end-to-end smoke test implemented using Playwright.
+
+The test verifies that the application loads correctly and that the Google sign-in entry point is visible to users.
+
+Run locally:
+
+```bash
+cd frontend
+npm install
+npx playwright install-deps
+npx playwright install
+npm run dev
+npm test
+
+## 🧪 Playwright Test Results
+
+An automated Playwright end-to-end smoke test was executed successfully.
+
+**Test summary:**
+- Test suite: `smoke.spec.js`
+- Scenario: Login screen displays Google sign-in entry point
+- Result:  Passed
+
+```text
+✓ login screen shows Google sign-in link
+1 passed
+
+
 
 
 ## 🎥 Video Demonstration
@@ -231,6 +261,11 @@ The video demonstration includes:
 - React interactivity and filtering
 - External API usage
 - Database persistence validation
+
+## 🎥 Demo Video
+
+Watch the full project walkthrough here:  
+https://drive.google.com/file/d/1QeZy1HiSDGHJRk7ygSf_YyPyJpYyCJyH/view?usp=drive_link
 
 ---
 
