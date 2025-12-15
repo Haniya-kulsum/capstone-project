@@ -4,9 +4,7 @@ import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
-
 const fetcher = (url) => api.get(url).then((res) => res.data);
-
 const COLORS = ["#0ea5e9", "#22c55e", "#eab308", "#f97316", "#ef4444"];
 
 function filterReducer(state, action) {
@@ -21,11 +19,7 @@ function filterReducer(state, action) {
 export default function Dashboard() {
   const { user, logout, loading } = useAuth();
 
-  // ✅ PREVENT BLANK SCREEN
-  if (loading) return <div className="center-message">Loading…</div>;
-  if (!user) return null;
-
-
+  // ✅ ALL HOOKS FIRST (NO RETURNS ABOVE THIS LINE)
   const [filterState, dispatchFilter] = useReducer(filterReducer, {
     category: "all",
   });
@@ -46,21 +40,25 @@ export default function Dashboard() {
     description: "",
   });
 
-  const {
-    data: transactions,
-    mutate: mutateTransactions,
-  } = useSWR(`/api/transactions/${user.id}`, fetcher);
+  const { data: transactions, mutate: mutateTransactions } = useSWR(
+    user ? `/api/transactions/${user.id}` : null,
+    fetcher
+  );
 
-  const txList = transactions ?? [];
- 
   const {
-  data: rateData,
-  isLoading: rateLoading,
-  error: rateError,
-    } = useSWR(
+    data: rateData,
+    isLoading: rateLoading,
+    error: rateError,
+  } = useSWR(
     "https://api.exchangerate.host/latest?base=USD&symbols=EUR",
     (url) => fetch(url).then((r) => r.json())
   );
+
+  // ✅ RETURNS ONLY AFTER ALL HOOKS
+  if (loading) return <div className="center-message">Loading…</div>;
+  if (!user) return null;
+
+  const txList = transactions ?? [];
 
   const filteredTx =
     filterState.category === "all"
@@ -71,9 +69,7 @@ export default function Dashboard() {
 
   const byCategory = Object.values(
     filteredTx.reduce((acc, t) => {
-      if (!acc[t.category]) {
-        acc[t.category] = { name: t.category, value: 0 };
-      }
+      acc[t.category] ??= { name: t.category, value: 0 };
       acc[t.category].value += t.amount || 0;
       return acc;
     }, {})
