@@ -29,8 +29,21 @@ function Login() {
 function AppContent() {
   const { user, loading } = useAuth();
 
-  if (loading) return <div className="center-message">Loading…</div>;
-  if (!user) return <Login />;
+  if (loading) {
+    return (
+      <div className="center-message">
+        Loading authentication…
+        <p className="subtle-text">
+          (Backend may take ~30 seconds to wake up)
+        </p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
   return <Dashboard />;
 }
 
