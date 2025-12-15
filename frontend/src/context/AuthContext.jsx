@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import api from "../api";
+import api from "../api/axios";
 
 const AuthContext = createContext();
 
@@ -11,8 +11,8 @@ export function AuthProvider({ children }) {
     const fetchUser = async () => {
       try {
         const res = await api.get("/auth/me");
-        setUser(res.data);
-      } catch {
+        setUser(res.data); // ✅ THIS IS THE FIX
+      } catch (err) {
         setUser(null);
       } finally {
         setLoading(false);
