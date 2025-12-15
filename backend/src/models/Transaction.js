@@ -2,12 +2,8 @@ import mongoose from "mongoose";
 
 const transactionSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      index: true,
-    },
+    userId: { type: String, required: true, index: true }
+
     type: {
       type: String,
       enum: ["income", "expense"],
