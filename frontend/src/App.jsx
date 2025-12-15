@@ -21,13 +21,8 @@ function Login() {
   );
 }
 
-function Dashboard() {
-  return (
-    <div className="center-message">
-      <h2>Dashboard loaded ✅</h2>
-    </div>
-  );
-}
+import Dashboard from "./pages/Dashboard";
+
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -50,3 +45,5 @@ export default function App() {
     </AuthProvider>
   );
 }
+  
+
