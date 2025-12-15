@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const transactionSchema = new mongoose.Schema(
   {
-    userId: { type: String, required: true, index: true }, // ✅ Google profile id string
+    userId: { type: String, required: true, index: true }, // ✅ Google user id
     type: { type: String, enum: ["income", "expense"], required: true },
     amount: { type: Number, required: true, min: 0 },
     category: { type: String, required: true },
@@ -14,4 +14,3 @@ const transactionSchema = new mongoose.Schema(
 
 export const Transaction =
   mongoose.models.Transaction || mongoose.model("Transaction", transactionSchema);
-
