@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
             "Cache-Control": "no-cache",
           },
         });
-        setUser(res.data.user);
+        setUser(res.data);
       } catch {
         setUser(null);
       } finally {
