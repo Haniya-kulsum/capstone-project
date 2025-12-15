@@ -25,23 +25,27 @@ router.get(
 
 
 // 👤 Get logged-in user (FIXED RESPONSE SHAPE)
+// 👤 Get logged-in user (consistent + works with Passport Google profile)
 router.get("/me", (req, res) => {
-  // 🚫 disable cache completely
   res.setHeader("Cache-Control", "no-store");
 
   if (!req.user) {
     return res.status(401).json({ user: null });
   }
 
+  // req.user is the Google profile (unless you replaced it in serialize/deserialize)
+  const googleProfile = req.user;
+
   res.json({
     user: {
-      _id: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-      avatarUrl: req.user.avatarUrl,
+      id: googleProfile.id,
+      name: googleProfile.displayName,
+      email: googleProfile.emails?.[0]?.value ?? null,
+      avatarUrl: googleProfile.photos?.[0]?.value ?? null,
     },
   });
 });
+
 
 // 🚪 Logout
 router.get("/logout", (req, res, next) => {

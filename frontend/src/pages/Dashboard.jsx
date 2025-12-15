@@ -29,10 +29,13 @@ export default function Dashboard() {
     category: "all",
   });
 
+  const userId = user?._id || user?.id;
+
   const { data: transactions, error } = useSWR(
-    user?.id ? `/api/transactions/${user.id}` : null,
+    userId ? `/api/transactions/${userId}` : null,
     fetcher
   );
+
 
   if (error) {
     return <div className="center-message">Failed to load transactions</div>;

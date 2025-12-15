@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
     const fetchUser = async () => {
       try {
         const res = await api.get("/auth/me");
-        setUser(res.data); // ✅ THIS IS THE FIX
+        setUser(res.data?.user ?? res.data);  // ✅ unwrap { user: {...} }
       } catch (err) {
         setUser(null);
       } finally {
