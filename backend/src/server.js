@@ -4,8 +4,12 @@ import passport from "passport";
 import cors from "cors";
 import authRoutes from "./routes/auth.js";
 import "./config/passport.js";
+import transactionsRoutes from "./routes/transactions.js";
 
 const app = express();
+
+// ✅ REQUIRED to parse JSON bodies
+app.use(express.json());
 
 app.use(
   cors({
@@ -31,11 +35,13 @@ app.use(
   })
 );
 
-
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/auth", authRoutes);
+
+// ✅ THIS WAS MISSING
+app.use("/api/transactions", transactionsRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend running");
